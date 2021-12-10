@@ -16,7 +16,7 @@
 namespace sorbet::core {
 
 class NameRef;
-class Symbol;
+class ClassOrModule;
 class SymbolRef;
 class ClassOrModuleRef;
 class MethodRef;
@@ -39,7 +39,7 @@ class SerializerImpl;
 
 class GlobalState final {
     friend NameRef;
-    friend Symbol;
+    friend ClassOrModule;
     friend Method;
     friend Field;
     friend TypeParameter;
@@ -309,7 +309,7 @@ private:
     std::vector<ConstantName> constantNames;
     std::vector<UniqueName> uniqueNames;
     UnorderedMap<std::string, FileRef> fileRefByPath;
-    std::vector<Symbol> classAndModules;
+    std::vector<ClassOrModule> classAndModules;
     std::vector<Method> methods;
     std::vector<Field> fields;
     std::vector<TypeParameter> typeMembers;
