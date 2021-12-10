@@ -140,8 +140,6 @@ ClassOrModuleRef GlobalState::synthesizeClass(NameRef nameId, uint32_t superclas
     SymbolData data = symRef.dataAllowingNone(*this); // allowing noSymbol is needed because this enters noSymbol.
     data->name = nameId;
     data->owner = Symbols::root();
-    data->flags = 0;
-    data->setClassOrModule();
     data->setIsModule(isModule);
     data->setSuperClass(ClassOrModuleRef(*this, superclass));
 
@@ -904,7 +902,6 @@ ClassOrModuleRef GlobalState::enterClassSymbol(Loc loc, ClassOrModuleRef owner, 
     classAndModules.emplace_back();
     SymbolData data = ret.data(*this);
     data->name = name;
-    data->flags = Symbol::Flags::CLASS_OR_MODULE;
     data->owner = owner;
     data->addLoc(*this, loc);
     DEBUG_ONLY(categoryCounterInc("symbols", "class"));
