@@ -779,8 +779,7 @@ class SymbolDefiner {
         // Common case: Everything is fine, user is trying to define a symbol on a class or module.
         if (scope.isClassOrModule()) {
             // Check if original symbol was mangled away. If so, complain.
-            auto renamedSymbol =
-                ctx.state.findRenamedSymbol(scope.asClassOrModuleRef().data(ctx)->owner.asClassOrModuleRef(), scope);
+            auto renamedSymbol = ctx.state.findRenamedSymbol(scope.asClassOrModuleRef().data(ctx)->owner, scope);
             if (renamedSymbol.exists()) {
                 if (auto e = ctx.state.beginError(core::Loc(ctx.file, loc), core::errors::Namer::InvalidClassOwner)) {
                     auto constLitName = name.show(ctx);
@@ -1155,7 +1154,7 @@ class SymbolDefiner {
             }
         } else {
             klassSymbol.data(ctx)->setIsModule(isModule);
-            auto renamed = ctx.state.findRenamedSymbol(klassSymbol.data(ctx)->owner.asClassOrModuleRef(), symbol);
+            auto renamed = ctx.state.findRenamedSymbol(klassSymbol.data(ctx)->owner, symbol);
             if (renamed.exists()) {
                 emitRedefinedConstantError(ctx, core::Loc(ctx.file, klass.loc), symbol, renamed);
             }
@@ -1569,8 +1568,8 @@ public:
             if (symbol == core::Symbols::todo()) {
                 auto squashedSymbol = squashNames(ctx, ctx.owner.enclosingClass(ctx), klass.name);
                 if (!squashedSymbol.isClassOrModule()) {
-                    klass.symbol = ctx.state.lookupClassSymbol(klass.symbol.data(ctx)->owner.asClassOrModuleRef(),
-                                                               klass.symbol.data(ctx)->name);
+                    klass.symbol =
+                        ctx.state.lookupClassSymbol(klass.symbol.data(ctx)->owner, klass.symbol.data(ctx)->name);
                     ENFORCE(klass.symbol.exists());
                 } else {
                     klass.symbol = squashedSymbol.asClassOrModuleRef();
