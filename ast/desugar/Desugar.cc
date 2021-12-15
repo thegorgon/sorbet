@@ -1980,9 +1980,8 @@ ExpressionPtr node2TreeImpl(DesugarContext dctx, unique_ptr<parser::Node> what) 
                             auto ctree = node2TreeImpl(dctx, std::move(cnode));
                             if (temp.exists()) {
                                 auto local = MK::Local(cloc, temp);
-                                auto patternloc = ctree.loc();
                                 test =
-                                    MK::Send1(patternloc, std::move(ctree), core::Names::tripleEq(), std::move(local));
+                                    MK::Send1(when->loc, std::move(ctree), core::Names::tripleEq(), std::move(local));
                             } else {
                                 test = std::move(ctree);
                             }
