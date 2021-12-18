@@ -119,8 +119,8 @@ const PackageInfo &PackageDB::getPackageForFile(const core::GlobalState &gs, cor
     ENFORCE(frozen);
     auto &fileData = file.data(gs);
     string_view path = fileData.path();
-    int curPrefixPos = path.find_last_of('/');
-    while (curPrefixPos != string::npos) {
+    size_t curPrefixPos = path.find_last_of('/');
+    while (curPrefixPos != string::npos && curPrefixPos != 0) {
         const auto &it = packagesByPathPrefix.find(path.substr(0, curPrefixPos + 1));
         if (it != packagesByPathPrefix.end()) {
             const auto &pkg = getPackageInfo(it->second);
