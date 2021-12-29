@@ -504,6 +504,7 @@ class EnforcePackagePrefix final {
     int errorDepth = 0;
     int rootConsts = 0;
     int skipPush = 0;
+    bool useTestNamespace = false;
 
 public:
     EnforcePackagePrefix(const PackageInfoImpl &pkg, bool isTestFile) : pkg(pkg), isTestFile(isTestFile) {
@@ -532,7 +533,7 @@ public:
             return tree;
         }
 
-        pushConstantLit(constantLit);
+        pushConstantLit(ctx, constantLit);
         auto &pkgName = requiredNamespace(ctx.state);
 
         if (rootConsts == 0 && !sharesPrefix(pkgName, nameParts)) {
@@ -591,7 +592,7 @@ public:
 
         if (lhs != nullptr && rootConsts == 0) {
             if (nameParts.size() == 0 || nameParts.size() < requiredNamespace(ctx.state).size()) {
-                pushConstantLit(lhs);
+                pushConstantLit(ctx, lhs);
                 auto &pkgName = requiredNamespace(ctx.state);
 
                 if (rootConsts == 0 && !isPrefix(pkgName, nameParts)) {
@@ -669,7 +670,7 @@ public:
     }
 
 private:
-    void pushConstantLit(ast::UnresolvedConstantLit *lit) {
+    void pushConstantLit(core::Context ctx, ast::UnresolvedConstantLit *lit) {
         auto oldLen = nameParts.size();
         while (lit != nullptr) {
             nameParts.emplace_back(lit->cnst);
@@ -682,6 +683,11 @@ private:
             }
         }
         reverse(nameParts.begin() + oldLen, nameParts.end());
+
+        if (oldLen == 0 && isTestFile && !nameParts.empty()) {
+            useTestNamespace =
+                isPrimaryTestNamespace(nameParts[0]) && !isSecondaryTestNamespace(ctx, pkg.name.fullName.parts[0]);
+        }
     }
 
     void popConstantLit(ast::UnresolvedConstantLit *lit) {
@@ -698,14 +704,7 @@ private:
     }
 
     const vector<core::NameRef> &requiredNamespace(const core::GlobalState &gs) const {
-        if (isTestFile) {
-            if (!isPrimaryTestNamespace(nameParts[0]) && isSecondaryTestNamespace(gs, pkg.name.fullName.parts[0])) {
-                return pkg.name.fullName.parts;
-            }
-            return pkg.name.fullTestPkgName.parts;
-        } else {
-            return pkg.name.fullName.parts;
-        }
+        return useTestNamespace ? pkg.name.fullTestPkgName.parts : pkg.name.fullName.parts;
     }
 };
 
