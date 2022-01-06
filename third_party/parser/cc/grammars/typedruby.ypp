@@ -1144,6 +1144,10 @@ int yylex(parser::semantic_type *lval, ruby_parser::typedruby27 &driver) {
                     {
                       $$ = driver.build.assign(self, $1, $2, $3);
                     }
+                | lhs tEQL error
+                    {
+                      $$ = driver.build.assign(self, $1, $2, driver.build.error_node(self, $2));
+                    }
                 | var_lhs tOP_ASGN arg_rhs
                     {
                       $$ = driver.build.op_assign(self, $1, $2, $3);
