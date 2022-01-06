@@ -3712,6 +3712,8 @@ f_opt_paren_args: f_paren_args
                   }
                 | tNL
 
+           // "terms" here stands for "terminators" (as in line terminators),
+           // not "terms" as in types & terms
            terms: term
                 | terms tSEMI
 
