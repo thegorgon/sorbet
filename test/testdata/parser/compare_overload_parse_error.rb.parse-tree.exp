@@ -1,4 +1,10 @@
 Begin {
   stmts = [
+    Send {
+      receiver = NULL
+      method = <U foo>
+      args = [
+      ]
+    }
   ]
 }

@@ -1,10 +1,10 @@
 # typed: false
-class A # error: class definition in method body
+class A
   def greater_eqaul>=(foo) # error: unexpected token ">="
-  end
+  end # error: unexpected token "end"
 end
 
-class B # error: class definition in method body
+class B
   def less_equal<=(foo) # error: unexpected token "<="
-  end
+  end # error: unexpected token "end"
 end
