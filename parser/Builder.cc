@@ -30,6 +30,8 @@ using std::vector;
 
 namespace sorbet::parser {
 
+extern const char *dclassStrings[];
+
 string Dedenter::dedent(string_view str) {
     string out;
 
@@ -299,9 +301,13 @@ public:
             return make_unique<IVarLhs>(iv->loc, iv->name);
         } else if (auto *c = parser::cast_node<Const>(node.get())) {
             if (!driver_->lex.context.dynamicConstDefintinionAllowed()) {
-                error(ruby_parser::dclass::DynamicConst, node->loc);
+                if (auto e = gs_.beginError(core::Loc(file_, node->loc), core::errors::Parser::ParserError)) {
+                    e.setHeader("{}", dclassStrings[(int)ruby_parser::dclass::DynamicConst]);
+                }
+                return make_unique<LVarLhs>(node->loc, core::Names::constAssignInMethodBody());
+            } else {
+                return make_unique<ConstLhs>(c->loc, std::move(c->scope), c->name);
             }
-            return make_unique<ConstLhs>(c->loc, std::move(c->scope), c->name);
         } else if (auto *cv = parser::cast_node<CVar>(node.get())) {
             return make_unique<CVarLhs>(cv->loc, cv->name);
         } else if (auto *gv = parser::cast_node<GVar>(node.get())) {

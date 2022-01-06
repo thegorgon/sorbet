@@ -55,7 +55,9 @@ NameDef names[] = {
     {"defined_p", "defined?"},
     {"undef"},
     {"each"},
+
     {"methodNameMissing", "<method-name-missing>"},
+    {"constAssignInMethodBody", "<const-assign-in-method-body>"},
 
     // used in CFG for temporaries
     {"whileTemp", "<whileTemp>"},
