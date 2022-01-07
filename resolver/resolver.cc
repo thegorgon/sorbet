@@ -364,10 +364,12 @@ private:
         ENFORCE(job.scope->scope != core::Symbols::StubModule());
 
         auto customAutogenError = original.cnst == core::Symbols::Subclasses().data(ctx)->name;
+        auto constantNameMissing = original.cnst == core::Names::Constants::ConstantNameMissing();
         // If a package exports a name that does not exist only one error should appear at the
         // export site. Ignore resolution failures in the aliases/modules created by packaging to
         // avoid this resulting in duplicate errors.
-        if ((!alreadyReported || customAutogenError) && !isPackagerMaterializedConstantRef(ctx, job)) {
+        if (!constantNameMissing && (!alreadyReported || customAutogenError) &&
+            !isPackagerMaterializedConstantRef(ctx, job)) {
             if (auto e = ctx.beginError(job.out->original.loc(), core::errors::Resolver::StubConstant)) {
                 e.setHeader("Unable to resolve constant `{}`", original.cnst.show(ctx));
 
