@@ -56,7 +56,7 @@ private:
 
     std::stack<environment> static_env;
     std::stack<literal> literal_stack;
-    std::queue<token_t> token_queue;
+    std::deque<token_t> token_queue;
 
     int cs;
     const char *_p;
@@ -148,7 +148,13 @@ public:
 
     lexer(diagnostics_t &diag, ruby_version version, const std::string &source_buffer_);
 
+    // Main interface consumed by yylex function in parser
     token_t advance();
+
+    // Useful for error recovery. Manually pushes `tok_to_push` (usually: the parser's current
+    // lookahead token) back onto the front of the token_queue, and then allocates a new token and
+    // returns it.
+    token_t unadvance(token_t tok_to_push, token_type type, size_t start, size_t end, const std::string &str);
 
     void set_state_expr_beg();
     void set_state_expr_end();

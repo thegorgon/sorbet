@@ -1605,6 +1605,18 @@ int yylex(parser::semantic_type *lval, ruby_parser::typedruby27 &driver) {
                 | primary_value tCOLON2 error
                     {
                       $$ = driver.build.constFetchError(self, $1, $2);
+                      // This rule is super hacky, and is best understood by carefully reading yylex and where yylex is
+                      // called inside the generated parser
+                      token_t lookahead = yyla.value.token;
+                      // TODO(jez) We should really make this look to see if the lookahead is one line below.
+                      // Seems tricky so I'm ignoring for now.
+                      yyclearin;
+                      // TODO(jez) This is not the actual location of the newline (consider: EOF, trailing spaces, etc).
+                      auto nl_type = ruby_parser::token_type::tNL;
+                      auto nl_tok = driver.lex.unadvance(lookahead, nl_type, $2->end(), $2->end() + 1, "\n");
+                      yyla.value.token = nl_tok;
+                      yyla.type = yytranslate_(static_cast<int>(nl_tok->type()));
+                      driver.last_token = nl_tok;
                     }
                 | tCOLON3 tCONSTANT
                     {

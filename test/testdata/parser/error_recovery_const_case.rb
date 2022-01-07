@@ -5,4 +5,4 @@ def foo(x)
   case x # error: unexpected token
   when Integer
   end
-end # error: unexpected token
+end
