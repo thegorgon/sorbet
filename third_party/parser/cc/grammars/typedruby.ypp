@@ -31,6 +31,8 @@ using namespace std::string_literals;
 %define api.namespace {ruby_parser::bison::typedruby27}
 %define api.prefix {typedruby27}
 %define api.value.type { union parser_value }
+// TODO(jez) Does this degrade parser performance?
+%define api.location.type { location }
 %define api.token.constructor false
 %define parse.assert
 %define parse.error verbose
@@ -455,7 +457,7 @@ namespace typedruby27 {
 	} \
 } while(false);
 
-void parser::error(const std::string &msg) {
+void parser::error(const ruby_parser::location &lloc, const std::string &msg) {
 	std::string error_message = msg;
 
 	int token_type = static_cast<int>(driver.last_token->type());
@@ -479,12 +481,14 @@ void parser::error(const std::string &msg) {
 		error_message);
 }
 
-int yylex(parser::semantic_type *lval, ruby_parser::typedruby27 &driver) {
+int yylex(parser::semantic_type *lval, ruby_parser::location *lloc, ruby_parser::typedruby27 &driver) {
 	auto token = driver.lex.advance();
 	driver.last_token = token;
 	int token_type = static_cast<int>(token->type());
 	assert(token_type >= 0);
 	lval->token = token;
+	lloc->begin = token->start();
+	lloc->end = token->end();
 	return token_type;
 }
 
@@ -1146,7 +1150,7 @@ int yylex(parser::semantic_type *lval, ruby_parser::typedruby27 &driver) {
                     }
                 | lhs tEQL error
                     {
-                      $$ = driver.build.assign(self, $1, $2, driver.build.error_node(self, $2));
+                      $$ = driver.build.assign(self, $1, $2, driver.build.error_node(self, @3.begin, @3.end));
                     }
                 | var_lhs tOP_ASGN arg_rhs
                     {

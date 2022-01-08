@@ -105,8 +105,12 @@ public:
         return std::min(off, maxOff_);
     }
 
+    core::LocOffsets locOffset(const size_t start, const size_t end) {
+        return core::LocOffsets{clamp((uint32_t)start), clamp((uint32_t)end)};
+    }
+
     core::LocOffsets tokLoc(const token *tok) {
-        return core::LocOffsets{clamp((uint32_t)tok->start()), clamp((uint32_t)tok->end())};
+        return locOffset(tok->start(), tok->end());
     }
 
     core::LocOffsets maybe_loc(unique_ptr<Node> &node) {
@@ -117,7 +121,7 @@ public:
     }
 
     core::LocOffsets tokLoc(const token *begin, const token *end) {
-        return core::LocOffsets{clamp((uint32_t)begin->start()), clamp((uint32_t)end->end())};
+        return locOffset(begin->start(), end->end());
     }
 
     core::LocOffsets collectionLoc(const token *begin, sorbet::parser::NodeVec &elts, const token *end) {
@@ -826,8 +830,8 @@ public:
         return make_unique<EncodingLiteral>(tokLoc(tok));
     }
 
-    unique_ptr<Node> error_node(const token *tok) {
-        return make_unique<Const>(tokLoc(tok), nullptr, core::Names::Constants::ErrorNode());
+    unique_ptr<Node> error_node(size_t begin, size_t end) {
+        return make_unique<Const>(locOffset(begin, end), nullptr, core::Names::Constants::ErrorNode());
     }
 
     unique_ptr<Node> false_(const token *tok) {
@@ -1955,9 +1959,9 @@ ForeignPtr encodingLiteral(SelfPtr builder, const token *tok) {
     return build->toForeign(build->encodingLiteral(tok));
 }
 
-ForeignPtr error_node(SelfPtr builder, const token *tok) {
+ForeignPtr error_node(SelfPtr builder, size_t begin, size_t end) {
     auto build = cast_builder(builder);
-    return build->toForeign(build->error_node(tok));
+    return build->toForeign(build->error_node(begin, end));
 }
 
 ForeignPtr false_(SelfPtr builder, const token *tok) {
