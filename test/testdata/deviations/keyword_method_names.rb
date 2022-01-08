@@ -31,6 +31,10 @@ def method_named_begin(x)
     .begin # ok
   x.
     begin # error: unexpected token
+
+  # due to how we've chosen to deviate, the above begin will look like a normal
+  # begin token so we need an extra end token to balance it.
+  end
 end
 
 def method_named_break(x)
