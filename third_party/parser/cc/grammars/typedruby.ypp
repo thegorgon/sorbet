@@ -495,20 +495,24 @@ int yylex(parser::semantic_type *lval, ruby_parser::location *lloc, ruby_parser:
 
 // This function is super hacky, and is best understood by carefully reading yylex and where yylex is
 // called inside the generated parser
-int unadvance_tNL_impl(parser::symbol_type &yyla, ruby_parser::typedruby27 &driver, size_t nl_start) {
-	// TODO(jez) We should really make this look to see if the lookahead is one line below.
-	// Seems tricky so I'm ignoring for now.
-	token_t lookahead = yyla.value.token;
-	yyla.clear(); // same as yyclearin macro
-	// TODO(jez) This is not the actual location of the newline (consider: EOF, trailing spaces, etc).
-	auto nl_type = ruby_parser::token_type::tNL;
-	auto nl_tok = driver.lex.unadvance(lookahead, nl_type, nl_start, nl_start + 1, "\n");
-	yyla.value.token = nl_tok;
-	driver.last_token = nl_tok;
-	return static_cast<int>(nl_tok->type());
+int maybe_inject_tNL_impl(parser::symbol_type &yyla, ruby_parser::typedruby27 &driver, size_t prev_end, size_t next_begin) {
+  auto fake_token = driver.lex.tok_view(prev_end, next_begin);
+  auto nl_start = fake_token.find('\n');
+  if (nl_start != std::string_view::npos) {
+    token_t lookahead = yyla.value.token;
+    yyla.clear(); // same as yyclearin macro
+    auto nl_type = ruby_parser::token_type::tNL;
+    auto nl_tok = driver.lex.unadvance(lookahead, nl_type, nl_start, nl_start + 1, "\n");
+    yyla.value.token = nl_tok;
+    driver.last_token = nl_tok;
+    return static_cast<int>(nl_tok->type());
+  } else {
+    // no-op
+    return static_cast<int>(yyla.value.token->type());
+  }
 }
 
-#define unadvance_tNL(start) ((yyla.type) = yytranslate_(unadvance_tNL_impl(yyla, driver, (start))))
+#define maybe_inject_tNL(prev_end, next_begin) ((yyla.type) = yytranslate_(maybe_inject_tNL_impl(yyla, driver, (prev_end), (next_begin))))
 
 }}} // namespace
 } // %code
@@ -1666,7 +1670,7 @@ undef_list_or_error:
                 | primary_value tCOLON2 error
                     {
                       $$ = driver.build.constFetchError(self, $1, $2);
-                      unadvance_tNL($2->end());
+                      maybe_inject_tNL(@2.end, @3.begin);
                     }
                 | tCOLON3 tCONSTANT
                     {
@@ -2375,7 +2379,7 @@ opt_block_args_tail:
                 | primary_value call_op error
                     {
                       $$ = driver.build.call_method_error(self, $1, $2);
-                      unadvance_tNL($2->end());
+                      maybe_inject_tNL(@2.end, @3.begin);
                     }
                 | primary_value tCOLON2 operation2 paren_args
                     {

@@ -110,12 +110,12 @@ private:
     int arg_or_cmdarg(int cmd_state);
     void emit_comment(const char *s, const char *e);
     char unescape(uint32_t cp);
-    std::string tok();
-    std::string tok(const char *start);
-    std::string tok(const char *start, const char *end);
-    std::string_view tok_view();
-    std::string_view tok_view(const char *start);
-    std::string_view tok_view(const char *start, const char *end);
+    std::string tok() const;
+    std::string tok(const char *start) const;
+    std::string tok(const char *start, const char *end) const;
+    std::string_view tok_view() const;
+    std::string_view tok_view(const char *start) const;
+    std::string_view tok_view(const char *start, const char *end) const;
     void emit(token_type type);
     void emit(token_type type, const std::string &str);
     void emit(token_type type, const std::string &str, const char *start, const char *end);
@@ -155,6 +155,8 @@ public:
     // lookahead token) back onto the front of the token_queue, and then allocates a new token and
     // returns it.
     token_t unadvance(token_t tok_to_push, token_type type, size_t start, size_t end, const std::string &str);
+
+    std::string_view tok_view(size_t start, size_t end) const;
 
     void set_state_expr_beg();
     void set_state_expr_end();
