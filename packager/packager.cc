@@ -686,7 +686,7 @@ private:
 
         if (oldLen == 0 && isTestFile && !nameParts.empty()) {
             useTestNamespace =
-                isPrimaryTestNamespace(nameParts[0]) && !isSecondaryTestNamespace(ctx, pkg.name.fullName.parts[0]);
+                isPrimaryTestNamespace(nameParts[0]) || !isSecondaryTestNamespace(ctx, pkg.name.fullName.parts[0]);
         }
     }
 
