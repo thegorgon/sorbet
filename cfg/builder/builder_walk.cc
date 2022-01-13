@@ -296,6 +296,9 @@ BasicBlock *CFGBuilder::walk(CFGContext cctx, ast::ExpressionPtr &what, BasicBlo
                     if (ast::isa_tree<ast::ConstantLit>(orig->scope)) {
                         LocalRef deadSym = cctx.newTemporary(core::Names::keepForIde());
                         current = walk(cctx.withTarget(deadSym), orig->scope, current);
+                    } else if (ast::isa_tree<ast::Send>(orig->scope)) {
+                        LocalRef deadSym = cctx.newTemporary(core::Names::keepForIde());
+                        current = walk(cctx.withTarget(deadSym), orig->scope, current);
                     }
                 }
 
